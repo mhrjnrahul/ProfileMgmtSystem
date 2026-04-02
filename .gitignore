@@ -1,0 +1,13 @@
+# Backend
+**/bin/
+**/obj/
+**/*.user
+**/appsettings.Development.json
+
+# Frontend
+**/node_modules/
+**/dist/
+
+# General
+.DS_Store
+*.env

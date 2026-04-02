@@ -1,0 +1,130 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createWorkExperience } from "@/api/workExperienceApi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+const createWorkExperienceSchema = z.object({
+  company: z.string().min(1, "Company is required"),
+  position: z.string().min(1, "Position is required"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().optional(),
+  description: z.string().optional(),
+  isCurrent: z.boolean(),
+});
+
+type CreateWorkExperienceFormData = z.infer<typeof createWorkExperienceSchema>;
+
+export default function CreateWorkExperienceDialog() {
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateWorkExperienceFormData>({
+    resolver: zodResolver(createWorkExperienceSchema),
+    defaultValues: {
+      isCurrent: false,
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: createWorkExperience,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workExperiences"] });
+      reset();
+      setOpen(false);
+    },
+  });
+
+  const onSubmit = async (data: CreateWorkExperienceFormData) => {
+    mutation.mutate(data);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>Add Work Experience</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add Work Experience</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-1">
+            <Label>Company</Label>
+            <Input placeholder="Google" {...register("company")} />
+            {errors.company && (
+              <p className="text-sm text-red-500">{errors.company.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <Label>Position</Label>
+            <Input placeholder="Software Engineer" {...register("position")} />
+            {errors.position && (
+              <p className="text-sm text-red-500">{errors.position.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <Label>Start Date</Label>
+            <Input type="date" {...register("startDate")} />
+            {errors.startDate && (
+              <p className="text-sm text-red-500">{errors.startDate.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <Label>End Date (optional)</Label>
+            <Input type="date" {...register("endDate")} />
+          </div>
+
+          <div className="space-y-1">
+            <Label>Description (optional)</Label>
+            <Input
+              placeholder="Brief description..."
+              {...register("description")}
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isCurrent"
+              checked={watch("isCurrent")}
+              onChange={(e) => setValue("isCurrent", e.target.checked)}
+            />
+            <Label htmlFor="isCurrent">Currently working here</Label>
+          </div>
+
+          {mutation.isError && (
+            <p className="text-sm text-red-500 text-center">
+              Failed to create work experience record
+            </p>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
