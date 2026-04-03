@@ -4,22 +4,22 @@ import RegisterPage from './pages/auth/RegisterPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicRoute from './components/PublicRoute'
 import DashboardLayout from './components/layouts/DashboardLayout'
-import EducationPage from './pages/education/EducationPage'
-import WorkExperiencePage from './pages/workexperience/WorkExperiencePage'
-import SkillPage from './pages/skill/SkillPage'
-import ProjectPage from './pages/project/ProjectPage'
-import SocialLinkPage from './pages/socialLink/SocialLinkPage'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import AdminRoute from './components/layouts/AdminRoute'
 import AdminPage from './pages/admin/AdminPage'
 import ProfileSettingsPage from './pages/profile/ProfileSettingsPage'
 import EditPortfolioPage from './pages/portfolio/EditPortfolioPage'
+import MyPortfolioPage from './pages/portfolio/MyPortfolioPage'
+// import Myp
 import HomePage from './pages/home/HomePage'
-import PublicPortfolioPage from './pages/portfolio/PublicPorfolioPage'
-
+import PublicPortfolioPage
+ from './pages/portfolio/PublicPorfolioPage'
 const router = createBrowserRouter([
-  {path: '/', element: <HomePage />},
+  // Public routes — no auth needed
+  { path: '/', element: <HomePage /> },
   { path: '/portfolio/:userId', element: <PublicPortfolioPage /> },
+
+  // Auth routes — redirect to dashboard if already logged in
   {
     element: <PublicRoute />,
     children: [
@@ -28,6 +28,7 @@ const router = createBrowserRouter([
     ],
   },
 
+  // Protected routes — redirect to login if not authenticated
   {
     element: <ProtectedRoute />,
     children: [
@@ -35,14 +36,11 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           { path: '/dashboard', element: <DashboardPage /> },
-          { path: '/education', element: <EducationPage /> },
-          { path: '/workexperience', element: <WorkExperiencePage /> },
-          { path: '/skill', element: <SkillPage /> },
-          { path: '/project', element: <ProjectPage /> },
-          { path: '/sociallink', element: <SocialLinkPage /> },
-          { path: '/profile/settings', element: <ProfileSettingsPage /> },
           { path: '/portfolio/edit', element: <EditPortfolioPage /> },
+          { path: '/portfolio/preview', element: <MyPortfolioPage /> },
+          { path: '/profile/settings', element: <ProfileSettingsPage /> },
 
+          // Admin only
           {
             element: <AdminRoute />,
             children: [
@@ -53,7 +51,7 @@ const router = createBrowserRouter([
       },
     ],
   },
-])  
+])
 
 export function AppRouter() {
   return <RouterProvider router={router} />

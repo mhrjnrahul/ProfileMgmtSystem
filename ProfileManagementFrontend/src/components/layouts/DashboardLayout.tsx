@@ -11,13 +11,9 @@ export default function DashboardLayout() {
   // update navItems to be dynamic:
 const navItems = [
   { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Education', path: '/education' },
-  { label: 'Work Experience', path: '/workexperience' },
-  { label: 'Skills', path: '/skill' },
-  { label: 'Projects', path: '/project' },
-  { label: 'Social Links', path: '/sociallink' },
+  { label: 'Edit Portfolio', path: '/portfolio/edit' },
+  { label: 'My Portfolio', path: '/portfolio/preview' },
   { label: 'Profile Settings', path: '/profile/settings' },
-  { label: 'My Portfolio', path: '/portfolio/edit' },
   ...(user?.role === 'Admin' ? [{ label: 'Admin', path: '/admin' }] : []),
 ]
 
