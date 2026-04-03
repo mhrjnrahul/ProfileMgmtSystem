@@ -347,18 +347,3 @@ export default function PortfolioView({ userId }: Props) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{
-      background: "white", borderRadius: 20,
-      border: "1px solid #F0EDE8",
-      boxShadow: "0 2px 8px rgba(26,24,20,0.04)",
-      padding: "24px 28px",
-    }}>
-      <p style={{ fontSize: 10, color: "#C4B8AC", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 16, fontWeight: 500 }}>
-        {title}
-      </p>
-      {children}
-    </div>
-  );
-}
