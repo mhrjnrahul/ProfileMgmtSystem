@@ -9,27 +9,30 @@ export default function MyPortfolioPage() {
   });
 
   if (isLoading) return (
-    <div className="min-h-screen bg-[#f8f8f6] flex items-center justify-center">
-      <p className="text-sm text-gray-400">Loading...</p>
+    <div style={{ minHeight: "100vh", background: "#FAF9F7", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ fontSize: 14, color: "#B8B0A8" }}>Loading...</p>
     </div>
   );
 
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-[#f8f8f6]">
-      <div className="max-w-3xl mx-auto px-8 pt-8">
-        <div className="mb-6">
-          <p className="text-xs font-medium tracking-widest uppercase text-gray-400 mb-1">
-            Preview
-          </p>
-          <h1 className="text-3xl font-bold text-gray-900">My Portfolio</h1>
-          <p className="text-xs text-gray-400 mt-1">
-            This is how your portfolio appears to others.
-          </p>
-          <div className="w-12 h-0.5 bg-gray-900 mt-3" />
-        </div>
+    <div style={{ minHeight: "100vh", background: "#FAF9F7", fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 32px 24px" }}>
+        <p style={{ fontSize: 10, color: "#C4B8AC", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8, fontWeight: 500 }}>
+          Preview
+        </p>
+        <h1 style={{ fontSize: 32, fontWeight: 400, color: "#1A1814", lineHeight: 1.2, fontFamily: "'Cormorant Garamond', serif" }}>
+          My Portfolio
+        </h1>
+        <p style={{ fontSize: 13, color: "#A89880", marginTop: 6 }}>
+          This is how your portfolio appears to others.
+        </p>
+        <div style={{ width: 40, height: 1.5, background: "#1A1814", marginTop: 16 }} />
       </div>
+
       <PortfolioView userId={profile.id} />
     </div>
   );
