@@ -19,14 +19,19 @@ namespace ProfileManagement.API.Helpers
             CreateMap<UpdateEducationRequest, Education>();
 
             //work experience MAPS
-             CreateMap<WorkExperience, WorkExperienceResponse>();  
+            CreateMap<WorkExperience, WorkExperienceResponse>();
             CreateMap<CreateWorkExperienceRequest, WorkExperience>();
             CreateMap<UpdateWorkExperienceRequest, WorkExperience>();
 
             //skill maps
-            CreateMap<Skill, SkillResponse>();
-            CreateMap<CreateSkillRequest, Skill>();
-            CreateMap<UpdateSkillRequest, Skill>();
+            CreateMap<Skill, SkillResponse>()
+    .ForMember(dest => dest.ProficiencyLevel, opt => opt.MapFrom(src => src.Proficiency));
+
+            CreateMap<CreateSkillRequest, Skill>()
+                .ForMember(dest => dest.Proficiency, opt => opt.MapFrom(src => src.ProficiencyLevel));
+
+            CreateMap<UpdateSkillRequest, Skill>()
+                .ForMember(dest => dest.Proficiency, opt => opt.MapFrom(src => src.ProficiencyLevel));
 
             //project maps
             CreateMap<Project, ProjectResponse>();

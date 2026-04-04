@@ -5,6 +5,6 @@ namespace ProfileManagement.API.DTOs.Skill
     public class CreateSkillRequest
     {
         public string Name { get; set; } = string.Empty;
-        public ProficiencyLevel Proficiency { get; set; }
+        public ProficiencyLevel ProficiencyLevel { get; set; }
     }
 }

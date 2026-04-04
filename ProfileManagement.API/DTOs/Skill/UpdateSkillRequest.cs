@@ -6,6 +6,6 @@ namespace ProfileManagement.API.DTOs.Skill
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public ProficiencyLevel Proficiency { get; set; }
+        public ProficiencyLevel ProficiencyLevel { get; set; }
     }
 }
