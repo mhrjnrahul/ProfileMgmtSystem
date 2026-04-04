@@ -4,40 +4,43 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateSocialLink } from "../../../api/socialLinkApi";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { SocialLinkResponse } from "../../../types/socialLink";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
-interface Props {
-  socialLink: SocialLinkResponse;
-}
-
-const editSocialLinkSchema = z.object({
+const schema = z.object({
   platform: z.number().min(1).max(5),
   url: z.string().min(1, "URL is required"),
 });
 
-type EditSocialLinkFormData = z.infer<typeof editSocialLinkSchema>;
+type FormData = z.infer<typeof schema>;
 
-export default function EditSocialLinkDialog({ socialLink }: Props) {
+const inputStyle = {
+  width: "100%", background: "white",
+  border: "1.5px solid #EDE8E3", borderRadius: 10,
+  padding: "10px 14px", fontSize: 13, color: "#1A1814",
+  outline: "none", fontFamily: "'DM Sans', sans-serif",
+  boxSizing: "border-box" as const,
+};
+
+const labelStyle = {
+  fontSize: 11, color: "#6B6058", fontWeight: 500,
+  display: "block", marginBottom: 5, letterSpacing: "0.02em",
+};
+
+const platforms = [
+  { value: 1, label: "LinkedIn" },
+  { value: 2, label: "GitHub" },
+  { value: 3, label: "Twitter" },
+  { value: 4, label: "Website" },
+  { value: 5, label: "Other" },
+];
+
+export default function EditSocialLinkDialog({ socialLink }: { socialLink: SocialLinkResponse }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<EditSocialLinkFormData>({
-    resolver: zodResolver(editSocialLinkSchema),
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       platform: socialLink.platform,
       url: socialLink.url,
@@ -45,63 +48,88 @@ export default function EditSocialLinkDialog({ socialLink }: Props) {
   });
 
   const mutation = useMutation({
-    mutationFn: (data: EditSocialLinkFormData & { id: number }) =>
-      updateSocialLink(data.id, data),
+    mutationFn: (data: FormData) => updateSocialLink(socialLink.id, { ...data, id: socialLink.id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["socialLinks"] });
-      reset();
       setOpen(false);
     },
   });
 
-  const onSubmit = async (data: EditSocialLinkFormData) => {
-    mutation.mutate({ id: socialLink.id, ...data });
-  };
+  const selectedPlatform = watch("platform");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Edit</Button>
+        <button style={{
+          fontSize: 12, color: "#6B6058", background: "#F5F0EA",
+          border: "1px solid #EDE8E3", borderRadius: 8,
+          padding: "6px 14px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+        }}>
+          Edit
+        </button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent style={{ fontFamily: "'DM Sans', sans-serif", maxWidth: 440 }}>
         <DialogHeader>
-          <DialogTitle>Edit Social Link</DialogTitle>
+          <DialogTitle style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 400, color: "#1A1814" }}>
+            Edit Social Link
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1">
-            <Label>Platform</Label>
-            <select
-              {...register("platform", { valueAsNumber: true })}
-              className="w-full border rounded-md p-2 text-sm"
-            >
-              <option value={1}>LinkedIn</option>
-              <option value={2}>GitHub</option>
-              <option value={3}>Twitter</option>
-              <option value={4}>Website</option>
-              <option value={5}>Other</option>
-            </select>
-            {errors.platform && (
-              <p className="text-sm text-red-500">{errors.platform.message}</p>
-            )}
+
+        <form onSubmit={handleSubmit((data) => mutation.mutate(data))} style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 4 }}>
+
+          <div>
+            <label style={labelStyle}>Platform</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+              {platforms.map((p) => {
+                const isSelected = selectedPlatform === p.value;
+                return (
+                  <button
+                    key={p.value}
+                    type="button"
+                    onClick={() => setValue("platform", p.value, { shouldValidate: true })}
+                    style={{
+                      padding: "9px 4px", borderRadius: 10, fontSize: 12, fontWeight: 500,
+                      cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                      border: `1.5px solid ${isSelected ? "#C4A882" : "#EDE8E3"}`,
+                      background: isSelected ? "#F5F0EA" : "white",
+                      color: isSelected ? "#A8895E" : "#8C8278",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+            {errors.platform && <p style={{ fontSize: 11, color: "#C4735A", marginTop: 3 }}>Please select a platform</p>}
           </div>
 
-          <div className="space-y-1">
-            <Label>URL</Label>
-            <Input placeholder="https://linkedin.com/in/..." {...register("url")} />
-            {errors.url && (
-              <p className="text-sm text-red-500">{errors.url.message}</p>
-            )}
+          <div>
+            <label style={labelStyle}>URL</label>
+            <input style={inputStyle} placeholder="https://linkedin.com/in/yourname" {...register("url")} />
+            {errors.url && <p style={{ fontSize: 11, color: "#C4735A", marginTop: 3 }}>{errors.url.message}</p>}
           </div>
 
           {mutation.isError && (
-            <p className="text-sm text-red-500 text-center">
-              Failed to update social link
-            </p>
+            <div style={{ background: "#FEF2EE", border: "1px solid #F5C4B5", borderRadius: 8, padding: "8px 12px" }}>
+              <p style={{ fontSize: 12, color: "#C4735A" }}>Failed to update social link.</p>
+            </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save"}
-          </Button>
+          <button
+            type="submit"
+            disabled={isSubmitting || mutation.isPending}
+            style={{
+              background: "#1A1814", color: "white", border: "none",
+              borderRadius: 10, padding: "11px", fontSize: 13, fontWeight: 500,
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+              opacity: isSubmitting || mutation.isPending ? 0.6 : 1,
+              fontFamily: "'DM Sans', sans-serif", marginTop: 4,
+            }}
+          >
+            {mutation.isPending ? "Saving..." : "Save Changes"}
+          </button>
+
         </form>
       </DialogContent>
     </Dialog>
