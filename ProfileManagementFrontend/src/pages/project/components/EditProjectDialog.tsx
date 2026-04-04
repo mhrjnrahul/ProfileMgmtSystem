@@ -4,23 +4,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateProject } from "../../../api/projectApi";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { ProjectResponse } from "../../../types/project";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
-interface Props {
-  project: ProjectResponse;
-}
-
-const editProjectSchema = z.object({
+const schema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   url: z.string().optional(),
@@ -28,92 +15,121 @@ const editProjectSchema = z.object({
   endDate: z.string().optional(),
 });
 
-type EditProjectFormData = z.infer<typeof editProjectSchema>;
+type FormData = z.infer<typeof schema>;
 
-export default function EditProjectDialog({ project }: Props) {
+const inputStyle = {
+  width: "100%", background: "white",
+  border: "1.5px solid #EDE8E3", borderRadius: 10,
+  padding: "10px 14px", fontSize: 13, color: "#1A1814",
+  outline: "none", fontFamily: "'DM Sans', sans-serif",
+  transition: "border-color 0.2s ease",
+  boxSizing: "border-box" as const,
+};
+
+const labelStyle = {
+  fontSize: 11, color: "#6B6058", fontWeight: 500,
+  display: "block", marginBottom: 5, letterSpacing: "0.02em",
+};
+
+export default function EditProjectDialog({ project }: { project: ProjectResponse }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<EditProjectFormData>({
-    resolver: zodResolver(editProjectSchema),
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       title: project.title,
-      description: project.description,
-      url: project.url,
+      description: project.description ?? "",
+      url: project.url ?? "",
       startDate: project.startDate.split("T")[0],
-      endDate: project.endDate?.split("T")[0],
+      endDate: project.endDate ? project.endDate.split("T")[0] : "",
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (data: EditProjectFormData & { id: number }) =>
-      updateProject(data.id, data),
+    mutationFn: (data: FormData) => updateProject(project.id, {
+      ...data,
+      id: project.id,
+      endDate: data.endDate === "" ? undefined : data.endDate,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
-      reset();
       setOpen(false);
     },
   });
 
-  const onSubmit = async (data: EditProjectFormData) => {
-    mutation.mutate({ id: project.id, ...data });
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Edit</Button>
+        <button style={{
+          fontSize: 12, color: "#6B6058", background: "#F5F0EA",
+          border: "1px solid #EDE8E3", borderRadius: 8,
+          padding: "6px 14px", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+        }}>
+          Edit
+        </button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent style={{ fontFamily: "'DM Sans', sans-serif", maxWidth: 440 }}>
         <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
+          <DialogTitle style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 400, color: "#1A1814" }}>
+            Edit Project
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1">
-            <Label>Title</Label>
-            <Input placeholder="My Awesome Project" {...register("title")} />
-            {errors.title && (
-              <p className="text-sm text-red-500">{errors.title.message}</p>
-            )}
+
+        <form onSubmit={handleSubmit((data) => mutation.mutate(data))} style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 4 }}>
+
+          <div>
+            <label style={labelStyle}>Title</label>
+            <input style={inputStyle} placeholder="My Awesome Project" {...register("title")} />
+            {errors.title && <p style={{ fontSize: 11, color: "#C4735A", marginTop: 3 }}>{errors.title.message}</p>}
           </div>
 
-          <div className="space-y-1">
-            <Label>Description (optional)</Label>
-            <Input placeholder="Brief description..." {...register("description")} />
+          <div>
+            <label style={labelStyle}>Description <span style={{ color: "#B8B0A8" }}>(optional)</span></label>
+            <textarea
+              style={{ ...inputStyle, resize: "vertical", minHeight: 72, lineHeight: 1.6 }}
+              placeholder="What did you build and what did you learn?"
+              {...register("description")}
+            />
           </div>
 
-          <div className="space-y-1">
-            <Label>URL (optional)</Label>
-            <Input placeholder="https://github.com/..." {...register("url")} />
+          <div>
+            <label style={labelStyle}>URL <span style={{ color: "#B8B0A8" }}>(optional)</span></label>
+            <input style={inputStyle} placeholder="https://github.com/..." {...register("url")} />
           </div>
 
-          <div className="space-y-1">
-            <Label>Start Date</Label>
-            <Input type="date" {...register("startDate")} />
-            {errors.startDate && (
-              <p className="text-sm text-red-500">{errors.startDate.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <Label>End Date (optional)</Label>
-            <Input type="date" {...register("endDate")} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label style={labelStyle}>Start Date</label>
+              <input style={inputStyle} type="date" {...register("startDate")} />
+              {errors.startDate && <p style={{ fontSize: 11, color: "#C4735A", marginTop: 3 }}>{errors.startDate.message}</p>}
+            </div>
+            <div>
+              <label style={labelStyle}>End Date <span style={{ color: "#B8B0A8" }}>(optional)</span></label>
+              <input style={inputStyle} type="date" {...register("endDate")} />
+            </div>
           </div>
 
           {mutation.isError && (
-            <p className="text-sm text-red-500 text-center">
-              Failed to update project
-            </p>
+            <div style={{ background: "#FEF2EE", border: "1px solid #F5C4B5", borderRadius: 8, padding: "8px 12px" }}>
+              <p style={{ fontSize: 12, color: "#C4735A" }}>Failed to update project.</p>
+            </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save"}
-          </Button>
+          <button
+            type="submit"
+            disabled={isSubmitting || mutation.isPending}
+            style={{
+              background: "#1A1814", color: "white", border: "none",
+              borderRadius: 10, padding: "11px", fontSize: 13, fontWeight: 500,
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+              opacity: isSubmitting || mutation.isPending ? 0.6 : 1,
+              fontFamily: "'DM Sans', sans-serif", marginTop: 4,
+            }}
+          >
+            {mutation.isPending ? "Saving..." : "Save Changes"}
+          </button>
+
         </form>
       </DialogContent>
     </Dialog>
