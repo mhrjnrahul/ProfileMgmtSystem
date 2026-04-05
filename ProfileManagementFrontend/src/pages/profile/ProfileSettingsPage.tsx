@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,6 +35,7 @@ const labelStyle = {
 export default function ProfileSettingsPage() {
   const queryClient = useQueryClient();
   const { user, setUser } = useAuthStore();
+  const hasPopulated = useRef(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["myProfile"],
@@ -49,8 +50,10 @@ export default function ProfileSettingsPage() {
     },
   });
 
+  // Only populate form once on first load — never on subsequent refetches
   useEffect(() => {
-    if (profile) {
+    if (profile && !hasPopulated.current) {
+      hasPopulated.current = true;
       reset({
         firstName: profile.firstName,
         lastName: profile.lastName,
@@ -66,20 +69,27 @@ export default function ProfileSettingsPage() {
   const mutation = useMutation({
     mutationFn: updateMyProfile,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["myProfile"] });
+      // Invalidate portfolio caches so My Portfolio reflects changes
       queryClient.invalidateQueries({ queryKey: ["publicProfile", profile?.id] });
       queryClient.invalidateQueries({ queryKey: ["publicEducations", profile?.id] });
       queryClient.invalidateQueries({ queryKey: ["publicWorkExperiences", profile?.id] });
       queryClient.invalidateQueries({ queryKey: ["publicSkills", profile?.id] });
       queryClient.invalidateQueries({ queryKey: ["publicProjects", profile?.id] });
       queryClient.invalidateQueries({ queryKey: ["publicSocialLinks", profile?.id] });
+      // Update sidebar name immediately
       setUser({ ...user!, firstName: data.firstName, lastName: data.lastName });
+      // Reset the populated flag and update myProfile cache with response data
+      queryClient.setQueryData(["myProfile"], data);
     },
   });
 
   const onSubmit = (data: FormData) => {
     mutation.mutate({
       ...data,
+      bio: data.bio === "" ? undefined : data.bio,
+      city: data.city === "" ? undefined : data.city,
+      country: data.country === "" ? undefined : data.country,
+      profilePicture: data.profilePicture === "" ? undefined : data.profilePicture,
       dateOfBirth: data.dateOfBirth === "" ? null : data.dateOfBirth,
     });
   };
