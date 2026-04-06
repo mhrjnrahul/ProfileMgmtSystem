@@ -1,18 +1,38 @@
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
+
+const navItems = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Edit Portfolio', path: '/portfolio/edit' },
+  { label: 'My Portfolio', path: '/portfolio/preview' },
+  { label: 'Profile Settings', path: '/profile/settings' },
+]
+
+const adminItems = [
+  { label: 'Admin', path: '/admin' },
+]
 
 export default function DashboardLayout() {
   const { user, logout } = useAuthStore((state) => state)
   const navigate = useNavigate()
   const location = useLocation()
 
-  const navItems = [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Edit Portfolio', path: '/portfolio/edit' },
-      { label: 'My Portfolio', path: '/portfolio/preview' },
-    { label: 'Profile Settings', path: '/profile/settings' },
-    ...(user?.role === 'Admin' ? [{ label: 'Admin', path: '/admin' }] : []),
-  ]
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
+
+  // Close on resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setMobileOpen(false)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -20,147 +40,240 @@ export default function DashboardLayout() {
   }
 
   const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase()
+  const allNavItems = user?.role === 'Admin' ? [...navItems, ...adminItems] : navItems
+
+  const SidebarContent = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+      {/* Logo */}
+      <div style={{ padding: '20px 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F0EDE8' }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <div style={{
+            width: 28, height: 28, borderRadius: 8, background: '#1A1814',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#E8D5B7', fontSize: 12, fontWeight: 700, flexShrink: 0,
+          }}>P</div>
+          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18, color: '#1A1814', fontWeight: 400, whiteSpace: 'nowrap' }}>
+            ProfileManager
+          </span>
+        </button>
+
+        {/* Close button — mobile only */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'none', border: '1px solid #F0EDE8', borderRadius: 8,
+            width: 30, height: 30, cursor: 'pointer', color: '#8C8278',
+            fontSize: 14, transition: 'all 0.15s ease',
+            // only show on mobile
+            visibility: 'visible',
+          }}
+          className="mobile-close-btn"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
+        <p style={{ fontSize: 10, color: '#C4B8AC', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px 8px', fontWeight: 500 }}>
+          Menu
+        </p>
+        {allNavItems.map((item) => {
+          const isActive = location.pathname === item.path
+          const isAdmin = item.label === 'Admin'
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '9px 12px',
+                borderRadius: 10,
+                fontSize: 13.5,
+                fontWeight: isActive ? 500 : 400,
+                color: isActive ? '#FAF9F7' : isAdmin ? '#C4A882' : '#8C8278',
+                background: isActive ? '#1A1814' : 'transparent',
+                textDecoration: 'none',
+                transition: 'background 0.15s ease, color 0.15s ease',
+                letterSpacing: '0.01em',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={e => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.background = isAdmin ? '#FBF6EF' : '#F5F0EA'
+                  ;(e.currentTarget as HTMLElement).style.color = isAdmin ? '#A8895E' : '#1A1814'
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.background = 'transparent'
+                  ;(e.currentTarget as HTMLElement).style.color = isAdmin ? '#C4A882' : '#8C8278'
+                }
+              }}
+            >
+              {item.label}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: '#F0EDE8', margin: '0 12px' }} />
+
+      {/* User section */}
+      <div style={{ padding: '14px 12px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', marginBottom: 4 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #1A1814, #3D2E1E)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#E8D5B7', fontSize: 11, fontWeight: 600, flexShrink: 0,
+          }}>
+            {initials}
+          </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: '#1A1814', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p style={{ fontSize: 11, color: '#B8B0A8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {user?.email}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={handleLogout}
+          style={{
+            width: '100%', textAlign: 'left', fontSize: 13, color: '#C4735A',
+            background: 'none', border: 'none', padding: '9px 12px', borderRadius: 10,
+            cursor: 'pointer', transition: 'background 0.15s ease',
+            fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#FEF2EE')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  )
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#FAF9F7', fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-        .display { font-family: 'Cormorant Garamond', serif; }
-        .nav-link {
+
+        /* Desktop sidebar — always visible, fixed width */
+        .desktop-sidebar {
+          width: 232px;
+          background: white;
+          border-right: 1px solid #F0EDE8;
+          flex-shrink: 0;
           display: flex;
+          flex-direction: column;
+        }
+
+        /* Mobile sidebar — hidden by default, slides in as overlay */
+        .mobile-sidebar {
+          display: none;
+          position: fixed;
+          top: 0; left: 0;
+          height: 100vh;
+          width: 232px;
+          background: white;
+          border-right: 1px solid #F0EDE8;
+          z-index: 50;
+          transform: translateX(-100%);
+          transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 4px 0 24px rgba(26,24,20,0.10);
+        }
+
+        .mobile-sidebar.open {
+          transform: translateX(0);
+        }
+
+        .mobile-overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(26,24,20,0.25);
+          z-index: 40;
+        }
+
+        .mobile-topbar {
+          display: none;
+          position: fixed;
+          top: 0; left: 0; right: 0;
+          height: 52px;
+          background: white;
+          border-bottom: 1px solid #F0EDE8;
           align-items: center;
-          padding: 9px 12px;
-          border-radius: 10px;
-          font-size: 13.5px;
-          font-weight: 400;
-          color: #8C8278;
-          text-decoration: none;
-          transition: background 0.15s ease, color 0.15s ease;
-          letter-spacing: 0.01em;
+          justify-content: space-between;
+          padding: 0 16px;
+          z-index: 30;
         }
-        .nav-link:hover {
-          background: #F5F0EA;
-          color: #1A1814;
+
+        @media (max-width: 767px) {
+          .desktop-sidebar { display: none; }
+          .mobile-sidebar { display: flex; flex-direction: column; }
+          .mobile-overlay.visible { display: block; }
+          .mobile-topbar { display: flex; }
+          .main-content { padding-top: 52px; }
         }
-        .nav-link.active {
-          background: #1A1814;
-          color: #FAF9F7;
-          font-weight: 500;
-        }
-        .nav-link.admin-link {
-          color: #C4A882;
-        }
-        .nav-link.admin-link:hover {
-          background: #FBF6EF;
-          color: #A8895E;
-        }
-        .nav-link.admin-link.active {
-          background: #1A1814;
-          color: #C4A882;
-        }
-        .logout-btn {
-          width: 100%;
-          text-align: left;
-          font-size: 13px;
-          color: #C4735A;
-          background: none;
-          border: none;
-          padding: 9px 12px;
-          border-radius: 10px;
-          cursor: pointer;
-          transition: background 0.15s ease;
-          font-family: 'DM Sans', sans-serif;
-        }
-        .logout-btn:hover {
-          background: #FEF2EE;
+
+        @media (min-width: 768px) {
+          .mobile-close-btn { display: none !important; }
         }
       `}</style>
 
-      {/* Sidebar */}
-      <aside style={{
-        width: 232,
-        background: 'white',
-        borderRight: '1px solid #F0EDE8',
-        display: 'flex',
-        flexDirection: 'column',
-        flexShrink: 0,
-      }}>
-
-        {/* Logo */}
-        <div style={{ padding: '24px 20px 20px' }}>
-          <button
-            onClick={() => navigate('/')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 8 }}
-          >
-            <div style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: '#1A1814',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ color: '#E8D5B7', fontSize: 12, fontWeight: 600 }}>P</span>
-            </div>
-            <span className="display" style={{ fontSize: 18, color: '#1A1814', fontWeight: 400 }}>
-              ProfileManager
-            </span>
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div style={{ height: 1, background: '#F0EDE8', margin: '0 20px' }} />
-
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-
-          <p style={{ fontSize: 10, color: '#C4B8AC', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px 8px', fontWeight: 500 }}>
-            Menu
-          </p>
-
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path
-            const isAdmin = item.label === 'Admin'
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`nav-link ${isActive ? 'active' : ''} ${isAdmin && !isActive ? 'admin-link' : ''}`}
-              >
-                {item.label}
-              </Link>
-            )
-          })}
-        </nav>
-
-        {/* Divider */}
-        <div style={{ height: 1, background: '#F0EDE8', margin: '0 20px' }} />
-
-        {/* User Section */}
-        <div style={{ padding: '16px 12px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 4 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #1A1814, #3D2E1E)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#E8D5B7', fontSize: 11, fontWeight: 600, flexShrink: 0,
-            }}>
-              {initials}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: '#1A1814', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p style={{ fontSize: 11, color: '#B8B0A8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.email}
-              </p>
-            </div>
-          </div>
-          <button className="logout-btn" onClick={handleLogout}>
-            Sign out
-          </button>
-        </div>
+      {/* ── Desktop Sidebar ── */}
+      <aside className="desktop-sidebar">
+        <SidebarContent />
       </aside>
 
-      {/* Main Content */}
-      <main style={{ flex: 1, overflowY: 'auto' }}>
+      {/* ── Mobile Overlay ── */}
+      <div
+        className={`mobile-overlay ${mobileOpen ? 'visible' : ''}`}
+        onClick={() => setMobileOpen(false)}
+      />
+
+      {/* ── Mobile Sidebar ── */}
+      <aside className={`mobile-sidebar ${mobileOpen ? 'open' : ''}`}>
+        <SidebarContent />
+      </aside>
+
+      {/* ── Mobile Top Bar ── */}
+      <div className="mobile-topbar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 26, height: 26, borderRadius: 7, background: '#1A1814',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#E8D5B7', fontSize: 12, fontWeight: 700,
+          }}>P</div>
+          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 16, color: '#1A1814' }}>
+            ProfileManager
+          </span>
+        </div>
+        <button
+          onClick={() => setMobileOpen(true)}
+          style={{
+            background: 'none', border: '1px solid #F0EDE8', borderRadius: 8,
+            width: 36, height: 36, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', cursor: 'pointer', fontSize: 16,
+            color: '#6B6058', transition: 'all 0.15s ease',
+          }}
+        >
+          ☰
+        </button>
+      </div>
+
+      {/* ── Main Content ── */}
+      <main className="main-content" style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
         <Outlet />
       </main>
     </div>

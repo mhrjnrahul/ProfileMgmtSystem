@@ -8,15 +8,15 @@ import { getSocialLinks } from "../../api/socialLinkApi";
 import { useNavigate } from "react-router-dom";
 import {
   HiAcademicCap, HiBriefcase, HiLightningBolt,
-  HiCode, HiLink, HiArrowRight, HiPencil, HiCollection,
+  HiCode, HiLink, HiArrowRight,
 } from "react-icons/hi";
 
 const statConfig = [
-  { label: "Education", path: "/education", icon: HiAcademicCap },
-  { label: "Work Experience", path: "/workexperience", icon: HiBriefcase },
-  { label: "Skills", path: "/skill", icon: HiLightningBolt },
-  { label: "Projects", path: "/project", icon: HiCode },
-  { label: "Social Links", path: "/sociallink", icon: HiLink },
+  { label: "Education", tab: "education", icon: HiAcademicCap },
+  { label: "Work Experience", tab: "workexperience", icon: HiBriefcase },
+  { label: "Skills", tab: "skill", icon: HiLightningBolt },
+  { label: "Projects", tab: "project", icon: HiCode },
+  { label: "Social Links", tab: "sociallink", icon: HiLink },
 ];
 
 export default function DashboardPage() {
@@ -45,233 +45,297 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FAF9F7", padding: "40px 32px", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#FAF9F7", padding: "48px 40px", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
         .display { font-family: 'Cormorant Garamond', serif; }
+
         .stat-card {
           background: white;
           border: 1px solid #F0EDE8;
           border-radius: 18px;
-          padding: 20px;
+          padding: 22px 20px;
           cursor: pointer;
           transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
           box-shadow: 0 2px 8px rgba(26,24,20,0.04);
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
         }
         .stat-card:hover {
           transform: translateY(-3px);
           box-shadow: 0 12px 32px rgba(26,24,20,0.10);
           border-color: #E8D5B7;
         }
-        .action-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 12px 14px;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: background 0.15s ease;
-          border: none;
-          background: none;
-          width: 100%;
-          text-align: left;
-          font-family: 'DM Sans', sans-serif;
+        .stat-card:hover .stat-arrow { opacity: 1; transform: translateX(0); }
+        .stat-arrow {
+          opacity: 0;
+          transform: translateX(-4px);
+          transition: opacity 0.2s ease, transform 0.2s ease;
+          color: #C4A882;
         }
-        .action-row:hover { background: #F5F0EA; }
-        .action-row:hover .action-arrow { color: #1A1814; }
-        .action-arrow { color: #D4CBC2; transition: color 0.15s ease; }
+
+        .card {
+          background: white;
+          border: 1px solid #F0EDE8;
+          border-radius: 20px;
+          padding: 28px;
+          box-shadow: 0 2px 8px rgba(26,24,20,0.04);
+        }
+
+        .section-label {
+          font-size: 10px;
+          color: #C4B8AC;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          font-weight: 500;
+          margin-bottom: 18px;
+        }
+
+        @media (max-width: 900px) {
+          .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .bottom-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 600px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
       `}</style>
 
-      <div style={{ maxWidth: 980, margin: "0 auto" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto" }}>
 
-        {/* Header */}
-        <div style={{ marginBottom: 36 }}>
-          <p style={{ fontSize: 11, color: "#C4B8AC", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8, fontWeight: 500 }}>
-            {greeting}
-          </p>
-          <h1 className="display" style={{ fontSize: 48, color: "#1A1814", lineHeight: 1.05, fontWeight: 400 }}>
-            {user?.firstName} {user?.lastName}
-          </h1>
-          <div style={{ width: 40, height: 1.5, background: "#1A1814", marginTop: 14 }} />
-        </div>
+        {/* ── Header ── */}
+        <div style={{ marginBottom: 40, display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <p style={{ fontSize: 11, color: "#C4B8AC", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10, fontWeight: 500 }}>
+              {greeting}
+            </p>
+            <h1 className="display" style={{ fontSize: 52, color: "#1A1814", lineHeight: 1, fontWeight: 400 }}>
+              {user?.firstName} {user?.lastName}
+            </h1>
+            <div style={{ width: 40, height: 1.5, background: "#C4A882", marginTop: 14 }} />
+          </div>
 
-        {/* Profile Strength */}
-        <div style={{
-          background: "white", borderRadius: 20, padding: "24px 28px",
-          border: "1px solid #F0EDE8", boxShadow: "0 2px 8px rgba(26,24,20,0.04)",
-          marginBottom: 20,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <div>
-              <p style={{ fontSize: 10, color: "#C4B8AC", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500, marginBottom: 6 }}>
-                Profile Strength
-              </p>
-              <p style={{ fontSize: 28, fontWeight: 600, color: "#1A1814", lineHeight: 1 }}>
+          {/* Profile completion pill */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            background: "white", border: "1px solid #F0EDE8",
+            borderRadius: 100, padding: "10px 18px",
+            boxShadow: "0 2px 8px rgba(26,24,20,0.04)",
+          }}>
+            <div style={{ position: "relative", width: 36, height: 36 }}>
+              <svg width="36" height="36" viewBox="0 0 36 36" style={{ transform: "rotate(-90deg)" }}>
+                <circle cx="18" cy="18" r="15" fill="none" stroke="#F0EDE8" strokeWidth="3" />
+                <circle
+                  cx="18" cy="18" r="15" fill="none"
+                  stroke={profileCompletion >= 80 ? "#2D7A4F" : profileCompletion >= 50 ? "#C4A882" : "#C4735A"}
+                  strokeWidth="3"
+                  strokeDasharray={`${(profileCompletion / 100) * 94.2} 94.2`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span style={{
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 9, fontWeight: 700, color: "#1A1814",
+              }}>
                 {profileCompletion}%
+              </span>
+            </div>
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "#1A1814", lineHeight: 1 }}>
+                {profileCompletion >= 80 ? "Strong profile" : profileCompletion >= 50 ? "Moderate profile" : "Needs work"}
+              </p>
+              <p style={{ fontSize: 11, color: "#B8B0A8", marginTop: 2 }}>
+                {completedSections} of 5 sections
               </p>
             </div>
-            <span style={{
-              fontSize: 11, fontWeight: 500, padding: "5px 14px", borderRadius: 100,
-              background: profileCompletion >= 80 ? "#EDFAF3" : profileCompletion >= 50 ? "#FBF6EF" : "#FEF2EE",
-              color: profileCompletion >= 80 ? "#2D7A4F" : profileCompletion >= 50 ? "#A8895E" : "#C4735A",
-            }}>
-              {profileCompletion >= 80 ? "Strong" : profileCompletion >= 50 ? "Moderate" : "Needs Work"}
-            </span>
           </div>
-          <div style={{ background: "#F0EDE8", borderRadius: 100, height: 4, overflow: "hidden" }}>
-            <div style={{
-              height: "100%", borderRadius: 100,
-              background: "linear-gradient(90deg, #C4A882, #A8895E)",
-              width: `${profileCompletion}%`,
-              transition: "width 0.7s ease",
-            }} />
-          </div>
-          <p style={{ fontSize: 12, color: "#B8B0A8", marginTop: 8 }}>
-            {completedSections} of 5 sections completed
-          </p>
         </div>
 
-        {/* Stats Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 20 }}>
+        {/* ── Stat Cards ── */}
+        <div
+          className="stats-grid"
+          style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 16 }}
+        >
           {statConfig.map((stat, i) => {
             const Icon = stat.icon;
             const isEmpty = counts[i] === 0;
             return (
-              <div key={stat.label} className="stat-card" onClick={() => navigate(stat.path)}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10, marginBottom: 16,
-                  background: isEmpty ? "#F5F0EA" : "#1A1814",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Icon style={{ width: 16, height: 16, color: isEmpty ? "#C4A882" : "#E8D5B7" }} />
+              <div
+                key={stat.label}
+                className="stat-card"
+                onClick={() => navigate('/portfolio/edit', { state: { tab: stat.tab } })}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{
+                    width: 34, height: 34, borderRadius: 10,
+                    background: isEmpty ? "#F5F0EA" : "#1A1814",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <Icon style={{ width: 15, height: 15, color: isEmpty ? "#C4A882" : "#E8D5B7" }} />
+                  </div>
+                  <HiArrowRight className="stat-arrow" style={{ width: 13, height: 13 }} />
                 </div>
-                <p style={{ fontSize: 28, fontWeight: 600, color: "#1A1814", lineHeight: 1, marginBottom: 4 }}>
-                  {counts[i]}
-                </p>
-                <p style={{ fontSize: 11, color: "#A89880", lineHeight: 1.3 }}>{stat.label}</p>
+                <div>
+                  <p style={{ fontSize: 30, fontWeight: 600, color: "#1A1814", lineHeight: 1, marginBottom: 5 }}>
+                    {counts[i]}
+                  </p>
+                  <p style={{ fontSize: 11, color: "#A89880", lineHeight: 1.3 }}>{stat.label}</p>
+                </div>
               </div>
             );
           })}
         </div>
 
-        {/* Bottom Row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        {/* ── Bottom Row ── */}
+        <div
+          className="bottom-grid"
+          style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 14 }}
+        >
 
-          {/* Quick Actions */}
-          <div style={{
-            background: "white", borderRadius: 20, padding: "24px",
-            border: "1px solid #F0EDE8", boxShadow: "0 2px 8px rgba(26,24,20,0.04)",
-          }}>
-            <p style={{ fontSize: 10, color: "#C4B8AC", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500, marginBottom: 16 }}>
-              Quick Actions
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {[
-                { label: "Edit Profile Settings", sub: "Update your personal info", path: "/profile/settings", icon: HiPencil },
-                { label: "Edit Portfolio", sub: "Manage all your sections", path: "/portfolio/edit", icon: HiCollection },
-                { label: "View My Portfolio", sub: "See how others see you", path: "/portfolio/preview", icon: HiArrowRight },
-              ].map((action) => {
-                const Icon = action.icon;
-                return (
-                  <button key={action.path} className="action-row" onClick={() => navigate(action.path)}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{
-                        width: 34, height: 34, borderRadius: 10,
-                        background: "#F5F0EA",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
-                        <Icon style={{ width: 15, height: 15, color: "#8C7B6B" }} />
-                      </div>
-                      <div>
-                        <p style={{ fontSize: 13, fontWeight: 500, color: "#1A1814" }}>{action.label}</p>
-                        <p style={{ fontSize: 11, color: "#B8B0A8" }}>{action.sub}</p>
-                      </div>
-                    </div>
-                    <HiArrowRight className="action-arrow" style={{ width: 14, height: 14 }} />
-                  </button>
-                );
-              })}
+          {/* Portfolio Snapshot */}
+          <div className="card">
+            <p className="section-label">Portfolio Snapshot</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%", flexShrink: 0,
+                background: "linear-gradient(135deg, #1A1814, #3D2E1E)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#E8D5B7", fontSize: 16, fontWeight: 600,
+              }}>
+                {user?.firstName?.[0]}{user?.lastName?.[0]}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#1A1814" }}>
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p style={{ fontSize: 12, color: "#B8B0A8", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {user?.email}
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Right column */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-            {/* Portfolio Snapshot */}
-            <div style={{
-              background: "white", borderRadius: 20, padding: "24px",
-              border: "1px solid #F0EDE8", boxShadow: "0 2px 8px rgba(26,24,20,0.04)",
-              flex: 1,
-            }}>
-              <p style={{ fontSize: 10, color: "#C4B8AC", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500, marginBottom: 16 }}>
-                Portfolio Snapshot
-              </p>
-              <div style={{ background: "#FAF9F7", borderRadius: 14, padding: "16px", border: "1px solid #F0EDE8" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                  <div style={{
-                    width: 38, height: 38, borderRadius: "50%",
-                    background: "linear-gradient(135deg, #1A1814, #3D2E1E)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#E8D5B7", fontSize: 12, fontWeight: 600, flexShrink: 0,
+            {/* Skills preview */}
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 11, color: "#C4B8AC", marginBottom: 8, fontWeight: 500 }}>Skills</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {skills?.slice(0, 4).map((skill) => (
+                  <span key={skill.id} style={{
+                    fontSize: 11, background: "#F5F0EA", color: "#8C7B6B",
+                    padding: "4px 12px", borderRadius: 100, fontWeight: 500,
                   }}>
-                    {user?.firstName?.[0]}{user?.lastName?.[0]}
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 500, color: "#1A1814" }}>
-                      {user?.firstName} {user?.lastName}
-                    </p>
-                    <p style={{ fontSize: 11, color: "#B8B0A8" }}>{user?.email}</p>
-                  </div>
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-                  {skills?.slice(0, 3).map((skill) => (
-                    <span key={skill.id} style={{
-                      fontSize: 11, background: "#F5F0EA", color: "#8C7B6B",
-                      padding: "3px 10px", borderRadius: 100,
-                    }}>
-                      {skill.name}
-                    </span>
-                  ))}
-                  {(skills?.length ?? 0) > 3 && (
-                    <span style={{ fontSize: 11, color: "#B8B0A8" }}>+{(skills?.length ?? 0) - 3} more</span>
-                  )}
-                  {(skills?.length ?? 0) === 0 && (
-                    <span style={{ fontSize: 11, color: "#C4B8AC", fontStyle: "italic" }}>No skills added yet</span>
-                  )}
-                </div>
-                <div style={{ display: "flex", gap: 12, fontSize: 11, color: "#B8B0A8" }}>
-                  <span>{educations?.length ?? 0} education</span>
-                  <span>·</span>
-                  <span>{workExperiences?.length ?? 0} experience</span>
-                  <span>·</span>
-                  <span>{projects?.length ?? 0} projects</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Account Info */}
-            <div style={{
-              background: "white", borderRadius: 20, padding: "24px",
-              border: "1px solid #F0EDE8", boxShadow: "0 2px 8px rgba(26,24,20,0.04)",
-            }}>
-              <p style={{ fontSize: 10, color: "#C4B8AC", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500, marginBottom: 16 }}>
-                Account
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {[
-                  { label: "Email", value: user?.email },
-                  { label: "Role", value: user?.role },
-                  { label: "Status", value: "Active" },
-                ].map((item) => (
-                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <p style={{ fontSize: 12, color: "#B8B0A8" }}>{item.label}</p>
-                    <p style={{ fontSize: 12, fontWeight: 500, color: "#1A1814" }}>{item.value}</p>
-                  </div>
+                    {skill.name}
+                  </span>
                 ))}
+                {(skills?.length ?? 0) > 4 && (
+                  <span style={{ fontSize: 11, color: "#B8B0A8", padding: "4px 0" }}>
+                    +{(skills?.length ?? 0) - 4} more
+                  </span>
+                )}
+                {(skills?.length ?? 0) === 0 && (
+                  <span style={{ fontSize: 11, color: "#C4B8AC", fontStyle: "italic" }}>No skills added yet</span>
+                )}
               </div>
             </div>
 
+            {/* Stats row */}
+            <div style={{
+              display: "flex", gap: 0,
+              background: "#FAF9F7", borderRadius: 12,
+              border: "1px solid #F0EDE8", overflow: "hidden",
+            }}>
+              {[
+                { label: "Education", value: educations?.length ?? 0 },
+                { label: "Experience", value: workExperiences?.length ?? 0 },
+                { label: "Projects", value: projects?.length ?? 0 },
+              ].map((item, i) => (
+                <div key={item.label} style={{
+                  flex: 1, padding: "12px 16px", textAlign: "center",
+                  borderRight: i < 2 ? "1px solid #F0EDE8" : "none",
+                }}>
+                  <p style={{ fontSize: 18, fontWeight: 600, color: "#1A1814", lineHeight: 1 }}>{item.value}</p>
+                  <p style={{ fontSize: 10, color: "#B8B0A8", marginTop: 3 }}>{item.label}</p>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate('/portfolio/preview')}
+              style={{
+                marginTop: 16, width: "100%", padding: "10px",
+                background: "none", border: "1px solid #F0EDE8",
+                borderRadius: 10, cursor: "pointer", fontSize: 12,
+                color: "#8C8278", fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 500, display: "flex", alignItems: "center",
+                justifyContent: "center", gap: 6,
+                transition: "all 0.15s ease",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#C4A882";
+                (e.currentTarget as HTMLButtonElement).style.color = "#1A1814";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#F0EDE8";
+                (e.currentTarget as HTMLButtonElement).style.color = "#8C8278";
+              }}
+            >
+              View my portfolio <HiArrowRight style={{ width: 12, height: 12 }} />
+            </button>
           </div>
+
+          {/* Account Info */}
+          <div className="card" style={{ display: "flex", flexDirection: "column" }}>
+            <p className="section-label">Account</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 0, flex: 1 }}>
+              {[
+                { label: "Email", value: user?.email },
+                { label: "Role", value: user?.role },
+                { label: "Status", value: "Active" },
+              ].map((item, i) => (
+                <div key={item.label} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "14px 0",
+                  borderBottom: i < 2 ? "1px solid #F5F0EA" : "none",
+                }}>
+                  <p style={{ fontSize: 12, color: "#B8B0A8" }}>{item.label}</p>
+                  <p style={{
+                    fontSize: 12, fontWeight: 500, color: "#1A1814",
+                    maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    textAlign: "right",
+                  }}>
+                    {item.label === "Status" ? (
+                      <span style={{
+                        background: "#EDFAF3", color: "#2D7A4F",
+                        padding: "3px 10px", borderRadius: 100, fontSize: 11, fontWeight: 500,
+                      }}>
+                        Active
+                      </span>
+                    ) : item.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate('/profile/settings')}
+              style={{
+                marginTop: 20, width: "100%", padding: "10px",
+                background: "#1A1814", border: "none",
+                borderRadius: 10, cursor: "pointer", fontSize: 12,
+                color: "white", fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 500, display: "flex", alignItems: "center",
+                justifyContent: "center", gap: 6,
+                transition: "background 0.15s ease",
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "#2D2926"}
+              onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "#1A1814"}
+            >
+              Edit profile settings <HiArrowRight style={{ width: 12, height: 12 }} />
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

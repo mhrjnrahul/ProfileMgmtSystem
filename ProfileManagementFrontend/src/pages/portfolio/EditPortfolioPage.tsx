@@ -4,8 +4,11 @@ import WorkExperiencePage from "@/pages/workexperience/WorkExperiencePage";
 import SkillPage from "@/pages/skill/SkillPage";
 import ProjectPage from "@/pages/project/ProjectPage";
 import SocialLinkPage from "@/pages/socialLink/SocialLinkPage";
+import { useLocation } from "react-router-dom";
 
 export default function EditPortfolioPage() {
+  const location = useLocation();
+   const defaultTab = location.state?.tab ?? 'education'
   return (
     <div className="min-h-screen bg-[#f8f8f6] p-8">
       <div className="max-w-5xl mx-auto">
@@ -19,7 +22,7 @@ export default function EditPortfolioPage() {
           <div className="w-12 h-0.5 bg-gray-900 mt-3" />
         </div>
 
-        <Tabs defaultValue="education">
+        <Tabs defaultValue={defaultTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="education">Education</TabsTrigger>
             <TabsTrigger value="workexperience">Work Experience</TabsTrigger>
