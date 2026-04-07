@@ -2,15 +2,19 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
 
-const navItems = [
+const userNavItems = [
   { label: 'Dashboard', path: '/dashboard' },
   { label: 'Edit Portfolio', path: '/portfolio/edit' },
   { label: 'My Portfolio', path: '/portfolio/preview' },
   { label: 'Profile Settings', path: '/profile/settings' },
 ]
 
-const adminItems = [
-  { label: 'Admin', path: '/admin' },
+const adminNavItems = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'User Management', path: '/admin' },
+  { label: 'My Portfolio', path: '/portfolio/preview' },
+  { label: 'Edit Portfolio', path: '/portfolio/edit' },
+  { label: 'Profile Settings', path: '/profile/settings' },
 ]
 
 export default function DashboardLayout() {
@@ -20,12 +24,10 @@ export default function DashboardLayout() {
 
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false)
   }, [location.pathname])
 
-  // Close on resize to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) setMobileOpen(false)
@@ -40,7 +42,7 @@ export default function DashboardLayout() {
   }
 
   const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase()
-  const allNavItems = user?.role === 'Admin' ? [...navItems, ...adminItems] : navItems
+  const allNavItems = user?.role === 'Admin' ? adminNavItems : userNavItems
 
   const SidebarContent = () => (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -61,7 +63,6 @@ export default function DashboardLayout() {
           </span>
         </button>
 
-        {/* Close button — mobile only */}
         <button
           onClick={() => setMobileOpen(false)}
           style={{
@@ -69,8 +70,6 @@ export default function DashboardLayout() {
             background: 'none', border: '1px solid #F0EDE8', borderRadius: 8,
             width: 30, height: 30, cursor: 'pointer', color: '#8C8278',
             fontSize: 14, transition: 'all 0.15s ease',
-            // only show on mobile
-            visibility: 'visible',
           }}
           className="mobile-close-btn"
         >
@@ -85,7 +84,7 @@ export default function DashboardLayout() {
         </p>
         {allNavItems.map((item) => {
           const isActive = location.pathname === item.path
-          const isAdmin = item.label === 'Admin'
+          const isUserManagement = item.label === 'User Management'
           return (
             <Link
               key={item.path}
@@ -97,7 +96,7 @@ export default function DashboardLayout() {
                 borderRadius: 10,
                 fontSize: 13.5,
                 fontWeight: isActive ? 500 : 400,
-                color: isActive ? '#FAF9F7' : isAdmin ? '#C4A882' : '#8C8278',
+                color: isActive ? '#FAF9F7' : isUserManagement ? '#C4A882' : '#8C8278',
                 background: isActive ? '#1A1814' : 'transparent',
                 textDecoration: 'none',
                 transition: 'background 0.15s ease, color 0.15s ease',
@@ -106,14 +105,14 @@ export default function DashboardLayout() {
               }}
               onMouseEnter={e => {
                 if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.background = isAdmin ? '#FBF6EF' : '#F5F0EA'
-                  ;(e.currentTarget as HTMLElement).style.color = isAdmin ? '#A8895E' : '#1A1814'
+                  (e.currentTarget as HTMLElement).style.background = isUserManagement ? '#FBF6EF' : '#F5F0EA'
+                  ;(e.currentTarget as HTMLElement).style.color = isUserManagement ? '#A8895E' : '#1A1814'
                 }
               }}
               onMouseLeave={e => {
                 if (!isActive) {
                   (e.currentTarget as HTMLElement).style.background = 'transparent'
-                  ;(e.currentTarget as HTMLElement).style.color = isAdmin ? '#C4A882' : '#8C8278'
+                  ;(e.currentTarget as HTMLElement).style.color = isUserManagement ? '#C4A882' : '#8C8278'
                 }
               }}
             >
@@ -168,7 +167,6 @@ export default function DashboardLayout() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
 
-        /* Desktop sidebar — always visible, fixed width */
         .desktop-sidebar {
           width: 232px;
           background: white;
@@ -178,7 +176,6 @@ export default function DashboardLayout() {
           flex-direction: column;
         }
 
-        /* Mobile sidebar — hidden by default, slides in as overlay */
         .mobile-sidebar {
           display: none;
           position: fixed;
@@ -231,23 +228,23 @@ export default function DashboardLayout() {
         }
       `}</style>
 
-      {/* ── Desktop Sidebar ── */}
+      {/* Desktop Sidebar */}
       <aside className="desktop-sidebar">
         <SidebarContent />
       </aside>
 
-      {/* ── Mobile Overlay ── */}
+      {/* Mobile Overlay */}
       <div
         className={`mobile-overlay ${mobileOpen ? 'visible' : ''}`}
         onClick={() => setMobileOpen(false)}
       />
 
-      {/* ── Mobile Sidebar ── */}
+      {/* Mobile Sidebar */}
       <aside className={`mobile-sidebar ${mobileOpen ? 'open' : ''}`}>
         <SidebarContent />
       </aside>
 
-      {/* ── Mobile Top Bar ── */}
+      {/* Mobile Top Bar */}
       <div className="mobile-topbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
@@ -272,7 +269,7 @@ export default function DashboardLayout() {
         </button>
       </div>
 
-      {/* ── Main Content ── */}
+      {/* Main Content */}
       <main className="main-content" style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
         <Outlet />
       </main>

@@ -14,6 +14,13 @@ import MyPortfolioPage from './pages/portfolio/MyPortfolioPage'
 import HomePage from './pages/home/HomePage'
 import PublicPortfolioPage
  from './pages/portfolio/PublicPorfolioPage'
+import AdminDashboardPage from './pages/dashboard/AdminDashboardPage'
+import { useAuthStore } from './store/authStore'
+
+ function DashboardPageRouter() {
+  const user = useAuthStore((state) => state.user);
+  return user?.role === 'Admin' ? <AdminDashboardPage /> : <DashboardPage />;
+}
 const router = createBrowserRouter([
   // Public routes — no auth needed
   { path: '/', element: <HomePage /> },
@@ -35,7 +42,7 @@ const router = createBrowserRouter([
       {
         element: <DashboardLayout />,
         children: [
-          { path: '/dashboard', element: <DashboardPage /> },
+          { path: '/dashboard', element: <DashboardPageRouter /> },
           { path: '/portfolio/edit', element: <EditPortfolioPage /> },
           { path: '/portfolio/preview', element: <MyPortfolioPage /> },
           { path: '/profile/settings', element: <ProfileSettingsPage /> },
