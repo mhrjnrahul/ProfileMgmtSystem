@@ -77,6 +77,16 @@ namespace ProfileManagement.API.Controllers
             return Ok(new { message = result.Message });
         }
 
+        [HttpPut("{userId}/reactivate")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ReactivateProfile(string userId)
+        {
+            var result = await _profileService.ReactivateProfileAsync(userId);
+            if (!result.Success)
+                return BadRequest(result.Message);
+            return Ok(new { message = result.Message });
+        }
+
         [HttpGet("search")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SearchUsers(

@@ -8,6 +8,7 @@ namespace ProfileManagement.API.Services.Interfaces
         Task<ProfileResponse?> GetUserProfileByIdAsync(string userId);
         Task<(bool Success, string Message, ProfileResponse? Data)> UpdateProfileAsync(string userId, UpdateProfileRequest request);
         Task<(bool Success, string Message)> DeactivateProfileAsync(string userId);
+        Task<(bool Success, string Message)> ReactivateProfileAsync(string userId);
         Task<IEnumerable<ProfileResponse>> SearchUsersAsync(
     string? name,
     string? skill,

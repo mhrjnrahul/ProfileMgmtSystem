@@ -49,9 +49,22 @@ namespace ProfileManagement.API.Services.Implementations
 
             user.IsActive = false;
             var result = await _userManager.UpdateAsync(user);
-            if(!result.Succeeded)
+            if (!result.Succeeded)
                 return (false, "Failed to deactivate profile");
             return (true, "Profile deactivated successfully");
+        }
+
+        public async Task<(bool Success, string Message)> ReactivateProfileAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return (false, "User not found");
+
+            user.IsActive = true;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return (false, "Failed to reactivate profile");
+            return (true, "Profile reactivated successfully");
         }
 
         public async Task<IEnumerable<ProfileResponse>> SearchUsersAsync(
@@ -80,7 +93,7 @@ namespace ProfileManagement.API.Services.Implementations
 
             var userList = users.ToList();
 
-            
+
 
             if (!string.IsNullOrEmpty(role))
             {

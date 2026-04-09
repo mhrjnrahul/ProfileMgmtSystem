@@ -6,7 +6,6 @@ import PublicRoute from './components/PublicRoute'
 import DashboardLayout from './components/layouts/DashboardLayout'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import AdminRoute from './components/layouts/AdminRoute'
-import AdminPage from './pages/admin/AdminPage'
 import ProfileSettingsPage from './pages/profile/ProfileSettingsPage'
 import EditPortfolioPage from './pages/portfolio/EditPortfolioPage'
 import MyPortfolioPage from './pages/portfolio/MyPortfolioPage'
@@ -16,6 +15,7 @@ import PublicPortfolioPage
  from './pages/portfolio/PublicPorfolioPage'
 import AdminDashboardPage from './pages/dashboard/AdminDashboardPage'
 import { useAuthStore } from './store/authStore'
+import UserManagementPage from './pages/admin/UserManagementPage'
 
  function DashboardPageRouter() {
   const user = useAuthStore((state) => state.user);
@@ -51,7 +51,7 @@ const router = createBrowserRouter([
           {
             element: <AdminRoute />,
             children: [
-              { path: '/admin', element: <AdminPage /> },
+              { path: '/admin', element: <UserManagementPage /> },
             ],
           },
         ],
